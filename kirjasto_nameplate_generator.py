@@ -28,8 +28,8 @@ from mathutils import Vector
 QUICKSAND_FONT_PATH = "C:/Windows/Fonts/Quicksand-Regular.ttf"  # Update this path!
 
 # Text Content
-TEXT_LINE_1 = "Kirjasto"
-TEXT_LINE_2 = "Library"
+TEXT_LINE_1 = "KIRJASTO"
+TEXT_LINE_2 = "LIBRARY"
 
 # Dimensions (in Blender units, typically meters - scale as needed)
 PLATE_LENGTH = 0.16  # 16 cm
@@ -45,6 +45,7 @@ TEXT_VERTICAL_OFFSET = 0.015  # Offset from plate center
 # Export Settings
 OUTPUT_DIR = "D:/7894/output"  # Output directory for files
 PROJECT_NAME = "Kirjasto_Library_plate"
+EXPORT_INDIVIDUAL_LETTERS = True  # Export each letter as separate STL file
 
 # ============================================================================
 # HELPER FUNCTIONS
@@ -247,6 +248,93 @@ def render_preview(output_dir, project_name, angle_name="45deg"):
 
     return render_path
 
+def export_individual_letters(text_string, output_dir, font_path):
+    """
+    Export each letter as a separate STL file
+
+    Args:
+        text_string: The text to split into letters (e.g., "KIRJASTO" or "LIBRARY")
+        output_dir: Directory to save the letter files
+        font_path: Path to the font file
+
+    Returns:
+        int: Number of letters successfully exported
+    """
+    print(f"\nExporting individual letters for: {text_string}")
+
+    # Create subdirectory for individual letters
+    letters_dir = os.path.join(output_dir, "individual_letters")
+    os.makedirs(letters_dir, exist_ok=True)
+
+    success_count = 0
+
+    # Process each unique letter
+    unique_letters = set(text_string.replace(" ", ""))
+
+    for letter in unique_letters:
+        try:
+            # Clear scene
+            bpy.ops.object.select_all(action='SELECT')
+            bpy.ops.object.delete()
+
+            # Create text object for this letter
+            bpy.ops.object.text_add()
+            text_obj = bpy.context.active_object
+            text_obj.name = f"Letter_{letter}"
+
+            # Load font
+            if os.path.exists(font_path):
+                font_data = bpy.data.fonts.load(font_path)
+                text_obj.data.font = font_data
+            else:
+                print(f"Warning: Font not found, using default for letter {letter}")
+
+            # Set text content
+            text_obj.data.body = letter
+            text_obj.data.size = TEXT_SIZE
+            text_obj.data.extrude = LETTER_EXTRUDE
+
+            # Convert to mesh
+            bpy.ops.object.convert(target='MESH')
+
+            # Apply solidify modifier for thickness
+            solidify = text_obj.modifiers.new(name="Solidify", type='SOLIDIFY')
+            solidify.thickness = LETTER_EXTRUDE
+            solidify.offset = 1
+
+            # Apply all modifiers
+            bpy.context.view_layer.objects.active = text_obj
+            for modifier in text_obj.modifiers:
+                bpy.ops.object.modifier_apply(modifier=modifier.name)
+
+            # Export as STL
+            letter_filename = f"letter_{letter}.stl"
+            letter_path = os.path.join(letters_dir, letter_filename)
+
+            bpy.ops.object.select_all(action='DESELECT')
+            text_obj.select_set(True)
+            bpy.context.view_layer.objects.active = text_obj
+
+            bpy.ops.export_mesh.stl(
+                filepath=letter_path,
+                use_selection=True,
+                global_scale=1000.0,  # Convert to mm
+                use_mesh_modifiers=True
+            )
+
+            if os.path.exists(letter_path):
+                success_count += 1
+                print(f"  ✓ Exported letter: {letter}")
+            else:
+                print(f"  ✗ Failed to export letter: {letter}")
+
+        except Exception as e:
+            print(f"  ✗ Error exporting letter {letter}: {e}")
+            continue
+
+    print(f"✓ Exported {success_count}/{len(unique_letters)} individual letters to: {letters_dir}")
+    return success_count
+
 # ============================================================================
 # MAIN EXECUTION
 # ============================================================================
@@ -306,6 +394,12 @@ def main():
     print("\nStep 11: Exporting files...")
     stl_path, blend_path = export_files(nameplate, OUTPUT_DIR, PROJECT_NAME)
 
+    # Step 11.5: Export individual letters if enabled
+    if EXPORT_INDIVIDUAL_LETTERS:
+        print("\nStep 11.5: Exporting individual letters...")
+        export_individual_letters(TEXT_LINE_1, OUTPUT_DIR, QUICKSAND_FONT_PATH)
+        export_individual_letters(TEXT_LINE_2, OUTPUT_DIR, QUICKSAND_FONT_PATH)
+
     # Step 12: Render preview (optional - can be slow)
     print("\nStep 12: Rendering preview...")
     try:
@@ -321,6 +415,8 @@ def main():
     print(f"\nFiles saved to: {OUTPUT_DIR}")
     print(f"- STL file: {PROJECT_NAME}_v1.stl")
     print(f"- BLEND file: {PROJECT_NAME}_v1.blend")
+    if EXPORT_INDIVIDUAL_LETTERS:
+        print(f"- Individual letter files: output/individual_letters/")
     print(f"\nDimensions:")
     print(f"- Plate: {PLATE_LENGTH*100:.1f} x {PLATE_WIDTH*100:.1f} cm")
     print(f"- Thickness: {PLATE_THICKNESS*1000:.1f} mm")

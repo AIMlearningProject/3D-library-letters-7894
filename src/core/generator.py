@@ -28,8 +28,8 @@ class NamePlateGenerator:
     def get_default_config(self) -> Dict:
         """Get default configuration"""
         return {
-            'text_line_1': 'Kirjasto',
-            'text_line_2': 'Library',
+            'text_line_1': 'KIRJASTO',
+            'text_line_2': 'LIBRARY',
             'plate_length': 160,  # mm
             'plate_width': 80,
             'plate_thickness': 7,

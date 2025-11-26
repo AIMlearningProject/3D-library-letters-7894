@@ -32,8 +32,8 @@ from datetime import datetime
 QUICKSAND_FONT_PATH = "C:/Windows/Fonts/Quicksand-Regular.ttf"  # Update this path!
 
 # Text Content
-TEXT_LINE_1 = "Kirjasto"
-TEXT_LINE_2 = "Library"
+TEXT_LINE_1 = "KIRJASTO"
+TEXT_LINE_2 = "LIBRARY"
 
 # Dimensions (in Blender units, typically meters)
 PLATE_LENGTH = 0.16      # 16 cm
@@ -49,6 +49,7 @@ TEXT_VERTICAL_OFFSET = 0.015  # Offset from plate center
 # Export Settings
 OUTPUT_DIR = "D:/7894/output"
 PROJECT_NAME = "Kirjasto_Library_plate"
+EXPORT_INDIVIDUAL_LETTERS = True  # Export each letter as separate STL file
 
 # Debug Settings
 DEBUG_MODE = True        # Enable detailed logging
@@ -572,6 +573,88 @@ def safe_save_blend(output_path):
         logger.debug(traceback.format_exc())
         return False
 
+def export_individual_letters(text_string, output_dir, font_path):
+    """
+    Export each letter as a separate STL file
+
+    Args:
+        text_string: The text to split into letters (e.g., "KIRJASTO" or "LIBRARY")
+        output_dir: Directory to save the letter files
+        font_path: Path to the font file
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        logger.info(f"Exporting individual letters for: {text_string}")
+
+        # Create subdirectory for individual letters
+        letters_dir = os.path.join(output_dir, "individual_letters")
+        os.makedirs(letters_dir, exist_ok=True)
+
+        success_count = 0
+
+        # Process each unique letter
+        unique_letters = set(text_string.replace(" ", ""))
+
+        for letter in unique_letters:
+            try:
+                # Clear scene
+                bpy.ops.object.select_all(action='SELECT')
+                bpy.ops.object.delete()
+
+                # Create text object for this letter
+                bpy.ops.object.text_add()
+                text_obj = bpy.context.active_object
+                text_obj.name = f"Letter_{letter}"
+
+                # Load font
+                if os.path.exists(font_path):
+                    font_data = bpy.data.fonts.load(font_path)
+                    text_obj.data.font = font_data
+                else:
+                    logger.warning(f"Font not found, using default for letter {letter}")
+
+                # Set text content
+                text_obj.data.body = letter
+                text_obj.data.size = TEXT_SIZE
+                text_obj.data.extrude = LETTER_EXTRUDE
+
+                # Convert to mesh
+                bpy.ops.object.convert(target='MESH')
+
+                # Apply solidify modifier for thickness
+                solidify = text_obj.modifiers.new(name="Solidify", type='SOLIDIFY')
+                solidify.thickness = LETTER_EXTRUDE
+                solidify.offset = 1
+
+                # Apply all modifiers
+                bpy.context.view_layer.objects.active = text_obj
+                for modifier in text_obj.modifiers:
+                    bpy.ops.object.modifier_apply(modifier=modifier.name)
+
+                # Export as STL
+                letter_filename = f"letter_{letter}.stl"
+                letter_path = os.path.join(letters_dir, letter_filename)
+
+                if safe_export_stl(text_obj, letter_path):
+                    success_count += 1
+                    logger.info(f"✓ Exported letter: {letter}")
+                else:
+                    logger.warning(f"Failed to export letter: {letter}")
+
+            except Exception as e:
+                logger.warning(f"Error exporting letter {letter}: {e}")
+                continue
+
+        logger.info(f"✓ Exported {success_count}/{len(unique_letters)} individual letters")
+        return success_count > 0
+
+    except Exception as e:
+        logger.error(f"Failed to export individual letters: {e}")
+        logger.debug(traceback.format_exc())
+        return False
+
 # ============================================================================
 # MAIN EXECUTION WITH COMPREHENSIVE ERROR HANDLING
 # ============================================================================
@@ -682,6 +765,21 @@ def main():
         if not safe_save_blend(blend_path):
             logger.error("BLEND save failed")
             return False
+
+        # Export individual letters if enabled
+        if EXPORT_INDIVIDUAL_LETTERS:
+            logger.section("EXPORTING INDIVIDUAL LETTERS")
+            logger.info("Exporting letters for 3D printing...")
+
+            # Export KIRJASTO letters
+            if not export_individual_letters(TEXT_LINE_1, OUTPUT_DIR, QUICKSAND_FONT_PATH):
+                logger.warning("Failed to export some KIRJASTO letters")
+
+            # Export LIBRARY letters
+            if not export_individual_letters(TEXT_LINE_2, OUTPUT_DIR, QUICKSAND_FONT_PATH):
+                logger.warning("Failed to export some LIBRARY letters")
+
+            logger.info(f"✓ Individual letter files saved to: {os.path.join(OUTPUT_DIR, 'individual_letters')}")
 
         # Phase 10: Summary
         logger.section("GENERATION COMPLETE!")

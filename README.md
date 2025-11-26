@@ -4,7 +4,8 @@ Automated Blender Python script for generating 3D-printable name plates based on
 
 ## Features
 
-- Automated text creation with Quicksand font
+- Automated text creation with Quicksand font in capital letters (KIRJASTO/LIBRARY)
+- **NEW**: Individual letter export - each letter exported as a separate STL file for modular printing
 - Customizable dimensions and spacing
 - Base plate generation with beveled edges
 - Automatic mesh conversion and cleanup
@@ -50,8 +51,8 @@ Edit the configuration section in the script (lines 22-41) before running:
 
 ```python
 # Text Content
-TEXT_LINE_1 = "Kirjasto"
-TEXT_LINE_2 = "Library"
+TEXT_LINE_1 = "KIRJASTO"
+TEXT_LINE_2 = "LIBRARY"
 
 # Dimensions (in Blender units)
 PLATE_LENGTH = 0.16      # 16 cm
@@ -60,6 +61,9 @@ PLATE_THICKNESS = 0.007  # 7 mm base thickness
 LETTER_EXTRUDE = 0.004   # 4 mm letter depth
 TEXT_SIZE = 0.025        # 2.5 cm text height
 LINE_SPACING = 0.035     # 3.5 cm between lines
+
+# Export Settings
+EXPORT_INDIVIDUAL_LETTERS = True  # Export each letter as separate STL
 ```
 
 ## Configuration Parameters
@@ -68,8 +72,8 @@ LINE_SPACING = 0.035     # 3.5 cm between lines
 - `QUICKSAND_FONT_PATH`: Path to Quicksand font file (REQUIRED)
 
 ### Text Content
-- `TEXT_LINE_1`: First line of text (default: "Kirjasto")
-- `TEXT_LINE_2`: Second line of text (default: "Library")
+- `TEXT_LINE_1`: First line of text (default: "KIRJASTO")
+- `TEXT_LINE_2`: Second line of text (default: "LIBRARY")
 
 ### Dimensions
 All dimensions are in Blender units (typically meters). The script automatically converts to millimeters for STL export.
@@ -84,20 +88,27 @@ All dimensions are in Blender units (typically meters). The script automatically
 ### Export Settings
 - `OUTPUT_DIR`: Directory for output files (default: "D:/7894/output")
 - `PROJECT_NAME`: Base name for exported files (default: "Kirjasto_Library_plate")
+- `EXPORT_INDIVIDUAL_LETTERS`: Export each letter as separate STL file (default: True)
 
 ## Output Files
 
 After running the script, you'll find these files in the output directory:
 
 1. **`Kirjasto_Library_plate_v1.stl`**
-   - 3D printable file in millimeters
+   - Complete nameplate as 3D printable file in millimeters
    - Ready to import into your slicer software
 
 2. **`Kirjasto_Library_plate_v1.blend`**
    - Blender project file
    - Can be opened for manual adjustments
 
-3. **`Kirjasto_Library_plate_preview_45deg.png`** (optional)
+3. **`individual_letters/`** (NEW - if `EXPORT_INDIVIDUAL_LETTERS` is True)
+   - Directory containing separate STL files for each unique letter
+   - Files named as `letter_K.stl`, `letter_I.stl`, `letter_R.stl`, etc.
+   - Allows printing individual letters for modular assembly or replacement
+   - Includes all unique letters from both "KIRJASTO" and "LIBRARY"
+
+4. **`Kirjasto_Library_plate_preview_45deg.png`** (optional)
    - Rendered preview image
    - May take time to render (can be skipped)
 
@@ -145,10 +156,16 @@ LETTER_EXTRUDE = 0.005  # 5 mm (deeper)
 ```
 
 ### Using Different Text
-Change the text content:
+Change the text content (use CAPITAL LETTERS for consistency):
 ```python
-TEXT_LINE_1 = "Welcome"
-TEXT_LINE_2 = "Center"
+TEXT_LINE_1 = "WELCOME"
+TEXT_LINE_2 = "CENTER"
+```
+
+### Disabling Individual Letter Export
+If you only want the complete nameplate without individual letters:
+```python
+EXPORT_INDIVIDUAL_LETTERS = False  # Disable individual letter files
 ```
 
 ## Troubleshooting
