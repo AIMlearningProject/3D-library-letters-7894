@@ -1,0 +1,35 @@
+# NamePlate Studio Pro - Requirements
+# Desktop GUI Application
+
+# Core Dependencies
+PyQt6>=6.6.0
+PyQt6-WebEngine>=6.6.0
+
+# 3D Graphics & Visualization
+matplotlib>=3.8.0
+numpy>=1.24.0
+Pillow>=10.0.0
+
+# QR Code Generation
+qrcode[pil]>=7.4.2
+segno>=1.6.0
+
+# File Handling
+pyyaml>=6.0
+toml>=0.10.2
+
+# Utilities
+python-dateutil>=2.8.2
+requests>=2.31.0
+
+# Development Tools (optional)
+pytest>=7.4.0
+pytest-qt>=4.2.0
+black>=23.0.0
+ruff>=0.1.0
+
+# Auto-update (future)
+# pyupdater>=4.0.0
+
+# Packaging
+pyinstaller>=6.0.0
