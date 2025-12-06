@@ -20,8 +20,10 @@ from .batch_dialog import BatchProcessDialog
 from .qr_dialog import QRCodeDialog
 try:
     from ..core.project_manager import ProjectManager
+    from ..core.translations import get_translator, tr
 except ImportError:
     from core.project_manager import ProjectManager
+    from core.translations import get_translator, tr
 
 
 class MainWindow(QMainWindow):
@@ -31,12 +33,16 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.settings = QSettings()
         self.current_file = None
+        self.translator = get_translator()
+        # Load saved language preference
+        saved_lang = self.settings.value("language", "en")
+        self.translator.set_language(saved_lang)
         self.init_ui()
         self.load_settings()
 
     def init_ui(self):
         """Initialize the user interface"""
-        self.setWindowTitle("NamePlate Studio Pro")
+        self.setWindowTitle(tr('app_name'))
         self.setGeometry(100, 100, 1400, 800)
 
         # Create central widget and layout
@@ -96,115 +102,128 @@ class MainWindow(QMainWindow):
         menubar = self.menuBar()
 
         # File Menu
-        file_menu = menubar.addMenu("&File")
+        file_menu = menubar.addMenu(tr('file'))
 
-        new_action = QAction("&New Project", self)
+        new_action = QAction(tr('new_project'), self)
         new_action.setShortcut(QKeySequence.StandardKey.New)
         new_action.triggered.connect(self.new_project)
         file_menu.addAction(new_action)
 
-        open_action = QAction("&Open Project...", self)
+        open_action = QAction(tr('open_project'), self)
         open_action.setShortcut(QKeySequence.StandardKey.Open)
         open_action.triggered.connect(self.open_project)
         file_menu.addAction(open_action)
 
-        save_action = QAction("&Save Project", self)
+        save_action = QAction(tr('save_project'), self)
         save_action.setShortcut(QKeySequence.StandardKey.Save)
         save_action.triggered.connect(self.save_project)
         file_menu.addAction(save_action)
 
-        save_as_action = QAction("Save Project &As...", self)
+        save_as_action = QAction(tr('save_project_as'), self)
         save_as_action.setShortcut(QKeySequence.StandardKey.SaveAs)
         save_as_action.triggered.connect(self.save_project_as)
         file_menu.addAction(save_as_action)
 
         file_menu.addSeparator()
 
-        recent_menu = file_menu.addMenu("Recent Projects")
+        recent_menu = file_menu.addMenu(tr('recent_projects'))
         self.update_recent_menu(recent_menu)
 
         file_menu.addSeparator()
 
-        export_action = QAction("&Export to STL...", self)
+        export_action = QAction(tr('export_to_stl'), self)
         export_action.setShortcut("Ctrl+E")
         export_action.triggered.connect(self.export_stl)
         file_menu.addAction(export_action)
 
-        export_blend_action = QAction("Export to Blend...", self)
+        export_blend_action = QAction(tr('export_to_blend'), self)
         export_blend_action.triggered.connect(self.export_blend)
         file_menu.addAction(export_blend_action)
 
         file_menu.addSeparator()
 
-        exit_action = QAction("E&xit", self)
+        exit_action = QAction(tr('exit'), self)
         exit_action.setShortcut(QKeySequence.StandardKey.Quit)
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
 
         # Edit Menu
-        edit_menu = menubar.addMenu("&Edit")
+        edit_menu = menubar.addMenu(tr('edit'))
 
-        undo_action = QAction("&Undo", self)
+        undo_action = QAction(tr('undo'), self)
         undo_action.setShortcut(QKeySequence.StandardKey.Undo)
         edit_menu.addAction(undo_action)
 
-        redo_action = QAction("&Redo", self)
+        redo_action = QAction(tr('redo'), self)
         redo_action.setShortcut(QKeySequence.StandardKey.Redo)
         edit_menu.addAction(redo_action)
 
         edit_menu.addSeparator()
 
-        preferences_action = QAction("&Preferences...", self)
+        preferences_action = QAction(tr('preferences'), self)
         preferences_action.setShortcut("Ctrl+,")
         preferences_action.triggered.connect(self.show_preferences)
         edit_menu.addAction(preferences_action)
 
         # View Menu
-        view_menu = menubar.addMenu("&View")
+        view_menu = menubar.addMenu(tr('view'))
 
-        zoom_in_action = QAction("Zoom &In", self)
+        zoom_in_action = QAction(tr('zoom_in'), self)
         zoom_in_action.setShortcut(QKeySequence.StandardKey.ZoomIn)
         view_menu.addAction(zoom_in_action)
 
-        zoom_out_action = QAction("Zoom &Out", self)
+        zoom_out_action = QAction(tr('zoom_out'), self)
         zoom_out_action.setShortcut(QKeySequence.StandardKey.ZoomOut)
         view_menu.addAction(zoom_out_action)
 
-        fit_view_action = QAction("&Fit to View", self)
+        fit_view_action = QAction(tr('fit_to_view'), self)
         fit_view_action.setShortcut("Ctrl+0")
         view_menu.addAction(fit_view_action)
 
         view_menu.addSeparator()
 
-        reset_view_action = QAction("&Reset View", self)
+        reset_view_action = QAction(tr('reset_view'), self)
         reset_view_action.triggered.connect(self.preview_panel.reset_view)
         view_menu.addAction(reset_view_action)
 
-        # Tools Menu
-        tools_menu = menubar.addMenu("&Tools")
+        view_menu.addSeparator()
 
-        batch_action = QAction("&Batch Processing...", self)
+        # Language submenu
+        language_menu = view_menu.addMenu(tr('language'))
+
+        english_action = QAction(tr('english'), self)
+        english_action.triggered.connect(lambda: self.change_language('en'))
+        language_menu.addAction(english_action)
+
+        finnish_action = QAction(tr('finnish'), self)
+        finnish_action.triggered.connect(lambda: self.change_language('fi'))
+        language_menu.addAction(finnish_action)
+
+        # Tools Menu
+        tools_menu = menubar.addMenu(tr('tools'))
+
+        batch_action = QAction(tr('batch_processing'), self)
         batch_action.setShortcut("Ctrl+B")
         batch_action.triggered.connect(self.show_batch_dialog)
         tools_menu.addAction(batch_action)
 
-        qr_action = QAction("Add &QR Code...", self)
+        qr_action = QAction(tr('add_qr_code'), self)
         qr_action.triggered.connect(self.show_qr_dialog)
         tools_menu.addAction(qr_action)
 
-        logo_action = QAction("Add &Logo/Image...", self)
+        logo_action = QAction(tr('add_logo'), self)
         logo_action.triggered.connect(self.add_logo)
         tools_menu.addAction(logo_action)
 
         tools_menu.addSeparator()
 
-        validate_action = QAction("&Validate Design", self)
+        validate_action = QAction(tr('validate_design'), self)
         validate_action.setShortcut("Ctrl+Shift+V")
         validate_action.triggered.connect(self.validate_design)
         tools_menu.addAction(validate_action)
 
         # Help Menu
-        help_menu = menubar.addMenu("&Help")
+        help_menu = menubar.addMenu(tr('help'))
 
         quick_start_action = QAction("&Quick Start Guide", self)
         quick_start_action.setShortcut(QKeySequence.StandardKey.HelpContents)
@@ -358,15 +377,26 @@ class MainWindow(QMainWindow):
     # Slot methods
     def on_design_changed(self, design_data):
         """Handle design changes from design panel"""
-        self.status_bar.showMessage("Design updated")
-        # Update preview if auto-update is enabled
-        if self.settings.value("auto_update_preview", True, bool):
-            self.preview_panel.update_preview(design_data)
+        try:
+            self.status_bar.showMessage("Design updated")
+            # Update preview if auto-update is enabled
+            if self.settings.value("auto_update_preview", True, bool):
+                self.preview_panel.update_preview(design_data)
+        except Exception as e:
+            self.status_bar.showMessage(f"Error updating preview: {str(e)}")
+            import traceback
+            traceback.print_exc()
 
     def on_template_selected(self, template_name):
         """Handle template selection"""
-        self.status_bar.showMessage(f"Template loaded: {template_name}")
-        self.design_panel.load_template(template_name)
+        try:
+            self.status_bar.showMessage(f"Template loaded: {template_name}")
+            self.design_panel.load_template(template_name)
+        except Exception as e:
+            self.status_bar.showMessage(f"Error loading template: {str(e)}")
+            QMessageBox.critical(self, "Error", f"Failed to load template:\n{str(e)}")
+            import traceback
+            traceback.print_exc()
 
     # Action methods
     def new_project(self):
@@ -432,25 +462,45 @@ class MainWindow(QMainWindow):
 
     def export_stl(self):
         """Export design to STL file"""
-        file_path, _ = QFileDialog.getSaveFileName(
-            self, "Export to STL",
-            str(Path.home()),
-            "STL Files (*.stl)"
-        )
-        if file_path:
-            # TODO: Implement STL export
-            self.status_bar.showMessage(f"Exported: {Path(file_path).name}")
+        try:
+            file_path, _ = QFileDialog.getSaveFileName(
+                self, "Export to STL",
+                str(Path.home()),
+                "STL Files (*.stl)"
+            )
+            if file_path:
+                # TODO: Implement STL export
+                QMessageBox.information(
+                    self,
+                    "Feature Coming Soon",
+                    "STL export is not yet implemented.\nThis feature will be available in a future update."
+                )
+                self.status_bar.showMessage(f"STL export: {Path(file_path).name}")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Export failed: {str(e)}")
+            import traceback
+            traceback.print_exc()
 
     def export_blend(self):
         """Export design to Blender file"""
-        file_path, _ = QFileDialog.getSaveFileName(
-            self, "Export to Blend",
-            str(Path.home()),
-            "Blender Files (*.blend)"
-        )
-        if file_path:
-            # TODO: Implement Blend export
-            self.status_bar.showMessage(f"Exported: {Path(file_path).name}")
+        try:
+            file_path, _ = QFileDialog.getSaveFileName(
+                self, "Export to Blend",
+                str(Path.home()),
+                "Blender Files (*.blend)"
+            )
+            if file_path:
+                # TODO: Implement Blend export
+                QMessageBox.information(
+                    self,
+                    "Feature Coming Soon",
+                    "Blender export is not yet implemented.\nThis feature will be available in a future update."
+                )
+                self.status_bar.showMessage(f"Blend export: {Path(file_path).name}")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Export failed: {str(e)}")
+            import traceback
+            traceback.print_exc()
 
     def generate_model(self):
         """Generate the 3D model"""
@@ -462,19 +512,46 @@ class MainWindow(QMainWindow):
 
     def show_preferences(self):
         """Show preferences dialog"""
-        dialog = SettingsDialog(self)
-        dialog.exec()
+        try:
+            dialog = SettingsDialog(self)
+            dialog.exec()
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"Failed to open preferences:\n{str(e)}\n\nPlease check the console for details."
+            )
+            import traceback
+            traceback.print_exc()
 
     def show_batch_dialog(self):
         """Show batch processing dialog"""
-        dialog = BatchProcessDialog(self)
-        dialog.exec()
+        try:
+            dialog = BatchProcessDialog(self)
+            dialog.exec()
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"Failed to open batch processing:\n{str(e)}\n\nPlease check the console for details."
+            )
+            import traceback
+            traceback.print_exc()
 
     def show_qr_dialog(self):
         """Show QR code dialog"""
-        dialog = QRCodeDialog(self)
-        dialog.qr_generated.connect(self.on_qr_generated)
-        dialog.exec()
+        try:
+            dialog = QRCodeDialog(self)
+            dialog.qr_generated.connect(self.on_qr_generated)
+            dialog.exec()
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"Failed to open QR dialog:\n{str(e)}\n\nPlease check the console for details."
+            )
+            import traceback
+            traceback.print_exc()
 
     def on_qr_generated(self, qr_data):
         """Handle QR code generation"""
@@ -490,6 +567,31 @@ class MainWindow(QMainWindow):
         if file_path:
             # TODO: Implement logo import
             self.status_bar.showMessage(f"Logo added: {Path(file_path).name}")
+
+    def change_language(self, lang_code):
+        """Change the UI language"""
+        # Set the new language
+        self.translator.set_language(lang_code)
+
+        # Save preference
+        self.settings.setValue("language", lang_code)
+
+        # Rebuild the menu bar
+        self.menuBar().clear()
+        self.create_menu_bar()
+
+        # Update window title
+        self.setWindowTitle(tr('app_name'))
+
+        # Update status bar
+        self.status_bar.showMessage(tr('ready'))
+
+        # Show message in new language
+        QMessageBox.information(
+            self,
+            tr('info'),
+            tr('language_changed_message', 'Language changed successfully! Some labels will update immediately, others may require restarting the app.')
+        )
 
     def validate_design(self):
         """Validate the current design"""

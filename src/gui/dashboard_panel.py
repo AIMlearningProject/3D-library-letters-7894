@@ -63,9 +63,9 @@ class DashboardPanel(QWidget):
         grid = QGridLayout()
         grid.setSpacing(15)
 
-        # Row 1: Quick Actions + AI Assistant
+        # Row 1: Quick Actions + Design Assistant
         grid.addWidget(self.create_quick_actions(), 0, 0)
-        grid.addWidget(self.create_ai_assistant(), 0, 1)
+        grid.addWidget(self.create_design_assistant(), 0, 1)
 
         # Row 2: Smart Calculator + Material Comparison
         grid.addWidget(self.create_smart_calculator(), 1, 0)
@@ -185,9 +185,9 @@ class DashboardPanel(QWidget):
         group.setLayout(layout)
         return group
 
-    def create_ai_assistant(self):
-        """AI-powered design suggestions (INNOVATIVE!)"""
-        group = QGroupBox("🤖 AI Design Assistant")
+    def create_design_assistant(self):
+        """Smart design suggestions (INNOVATIVE!)"""
+        group = QGroupBox("💡 Design Assistant")
         layout = QVBoxLayout()
 
         info = QLabel("Get smart suggestions for your designs")

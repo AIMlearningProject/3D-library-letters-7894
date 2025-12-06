@@ -9,6 +9,11 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, pyqtSignal
 
+try:
+    from ..core.translations import tr
+except ImportError:
+    from core.translations import tr
+
 
 class DesignPanel(QWidget):
     """Panel for design configuration"""
@@ -25,45 +30,45 @@ class DesignPanel(QWidget):
         layout.setSpacing(10)
 
         # Text Content Group
-        text_group = QGroupBox("Text Content")
+        text_group = QGroupBox(tr('text_content'))
         text_layout = QFormLayout()
 
         self.line1_edit = QLineEdit("Kirjasto")
         self.line1_edit.textChanged.connect(self.emit_design_changed)
-        text_layout.addRow("Line 1:", self.line1_edit)
+        text_layout.addRow(tr('line_1'), self.line1_edit)
 
         self.line2_edit = QLineEdit("Library")
         self.line2_edit.textChanged.connect(self.emit_design_changed)
-        text_layout.addRow("Line 2:", self.line2_edit)
+        text_layout.addRow(tr('line_2'), self.line2_edit)
 
         text_group.setLayout(text_layout)
         layout.addWidget(text_group)
 
         # Dimensions Group
-        dimensions_group = QGroupBox("Dimensions (mm)")
+        dimensions_group = QGroupBox(tr('dimensions'))
         dim_layout = QVBoxLayout()
 
         # Plate length
         self.plate_length = self.create_slider_control(
-            "Plate Length:", 50, 500, 160, " mm"
+            tr('plate_length'), 50, 500, 160, " mm"
         )
         dim_layout.addLayout(self.plate_length['layout'])
 
         # Plate width
         self.plate_width = self.create_slider_control(
-            "Plate Width:", 30, 300, 80, " mm"
+            tr('plate_width'), 30, 300, 80, " mm"
         )
         dim_layout.addLayout(self.plate_width['layout'])
 
         # Plate thickness
         self.plate_thickness = self.create_slider_control(
-            "Plate Thickness:", 3, 20, 7, " mm"
+            tr('plate_thickness'), 3, 20, 7, " mm"
         )
         dim_layout.addLayout(self.plate_thickness['layout'])
 
         # Letter depth
         self.letter_depth = self.create_slider_control(
-            "Letter Depth:", 2, 20, 4, " mm"
+            tr('letter_depth'), 2, 20, 4, " mm"
         )
         dim_layout.addLayout(self.letter_depth['layout'])
 
@@ -71,7 +76,7 @@ class DesignPanel(QWidget):
         layout.addWidget(dimensions_group)
 
         # Typography Group
-        typo_group = QGroupBox("Typography")
+        typo_group = QGroupBox(tr('typography'))
         typo_layout = QFormLayout()
 
         self.font_combo = QComboBox()
@@ -83,46 +88,46 @@ class DesignPanel(QWidget):
             "Helvetica"
         ])
         self.font_combo.currentTextChanged.connect(self.emit_design_changed)
-        typo_layout.addRow("Font:", self.font_combo)
+        typo_layout.addRow(tr('font'), self.font_combo)
 
         self.text_size = QDoubleSpinBox()
         self.text_size.setRange(10, 100)
         self.text_size.setValue(25)
         self.text_size.setSuffix(" mm")
         self.text_size.valueChanged.connect(self.emit_design_changed)
-        typo_layout.addRow("Text Size:", self.text_size)
+        typo_layout.addRow(tr('text_size'), self.text_size)
 
         self.line_spacing = QDoubleSpinBox()
         self.line_spacing.setRange(10, 100)
         self.line_spacing.setValue(35)
         self.line_spacing.setSuffix(" mm")
         self.line_spacing.valueChanged.connect(self.emit_design_changed)
-        typo_layout.addRow("Line Spacing:", self.line_spacing)
+        typo_layout.addRow(tr('line_spacing'), self.line_spacing)
 
         typo_group.setLayout(typo_layout)
         layout.addWidget(typo_group)
 
         # Material Group
-        material_group = QGroupBox("Material & Finish")
+        material_group = QGroupBox(tr('material_finish'))
         material_layout = QFormLayout()
 
         self.material_combo = QComboBox()
         self.material_combo.addItems([
-            "PLA Standard",
-            "PETG Glossy",
-            "ABS",
-            "Wood Fill",
-            "Carbon Fiber"
+            tr('pla_standard'),
+            tr('petg_glossy'),
+            tr('abs'),
+            tr('wood_fill'),
+            tr('carbon_fiber')
         ])
-        material_layout.addRow("Material:", self.material_combo)
+        material_layout.addRow(tr('material'), self.material_combo)
 
         self.finish_combo = QComboBox()
         self.finish_combo.addItems([
-            "Smooth (post-processed)",
-            "Standard (as-printed)",
-            "Textured"
+            tr('smooth'),
+            tr('standard'),
+            tr('textured')
         ])
-        material_layout.addRow("Finish:", self.finish_combo)
+        material_layout.addRow(tr('finish'), self.finish_combo)
 
         material_group.setLayout(material_layout)
         layout.addWidget(material_group)
@@ -130,11 +135,11 @@ class DesignPanel(QWidget):
         # Action Buttons
         button_layout = QHBoxLayout()
 
-        reset_btn = QPushButton("Reset to Default")
+        reset_btn = QPushButton(tr('reset_to_default'))
         reset_btn.clicked.connect(self.reset)
         button_layout.addWidget(reset_btn)
 
-        generate_btn = QPushButton("Generate Preview")
+        generate_btn = QPushButton(tr('generate_preview'))
         generate_btn.clicked.connect(self.emit_design_changed)
         button_layout.addWidget(generate_btn)
 
@@ -164,8 +169,9 @@ class DesignPanel(QWidget):
         spinbox.setValue(default)
         spinbox.setSuffix(suffix)
         spinbox.setMinimumWidth(80)
-        spinbox.valueChanged.connect(slider.setValue)
-        slider.valueChanged.connect(spinbox.setValue)
+        # Convert float to int for slider, and int to float for spinbox
+        spinbox.valueChanged.connect(lambda v: slider.setValue(int(v)))
+        slider.valueChanged.connect(lambda v: spinbox.setValue(float(v)))
         layout.addWidget(spinbox)
 
         return {
