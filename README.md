@@ -4,8 +4,7 @@
 
 A powerful desktop application for designing and generating 3D-printable name plates with real-time preview, bilingual interface (English/Finnish), and advanced customization options.
 
-![NamePlate Studio Pro](./screenshot.png)
-*Screenshot: Add your screenshot as `screenshot.png` in the project root*
+![NamePlate Studio Pro](./Screenshot.jpg)
 
 ## Features
 
@@ -61,7 +60,7 @@ requests>=2.31.0
 
 1. **Clone or download the repository**
    ```bash
-   git clone <repository-url>
+   git clone (https://github.com/AIMlearningProject/3D-library-letters-7894)
    cd 7894
    ```
 
